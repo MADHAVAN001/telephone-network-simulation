@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
 
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 /**
  * 
  * @author MADHAVAN001
@@ -12,15 +15,28 @@ import java.util.Random;
  */
 public class Simulation {
 	private static String directory = "src/main/resources/";
-	
+
 	public static void main(String args[]) {
 		String inputFile = directory + "data_file.csv";
 		PriorityQueue<Event> futureEventList = new PriorityQueue<Event>();
 		int channelsAvailable[][] = new int[21][2];
 
+		/*
+		 * Properties for plotting
+		 */
+		XYSeriesCollection dataset = new XYSeriesCollection();
+	    XYSeries series1 = new XYSeries("Call Dropped Percentage");
+	    XYSeries series2 = new XYSeries("Call Blocked Percentage");
+		
+	    
+	    List<Double> dropped = new ArrayList<Double>();
+	    List<Double> blocked = new ArrayList<Double>();
+	    
+		for(int iterations = 0;iterations<1000;iterations++)
+		{
 		for (int i = 0; i < 21; i++) {
-			channelsAvailable[i][0] = 9;
-			channelsAvailable[i][1] = 1;
+			channelsAvailable[i][0] = 10;
+			channelsAvailable[i][1] = 0;
 		}
 		int callDropped = 0;
 		int callCompleted = 0;
@@ -32,17 +48,28 @@ public class Simulation {
 		List<Event> startEvents = generateCallStartEvents(inputFile);
 		for (int i = 0; i < 10000; i++)
 			futureEventList.add(startEvents.get(i));
+		
 		int numCalls = 0;
 		while (futureEventList.size() > 0) {
 			Event currentEvent = futureEventList.poll();
 			if (currentEvent.getType() == EventType.CALL_START_EVENT) {
-				numCalls++;
-
+				
+				try{
+					dropped.set(numCalls, dropped.get(numCalls)+(double)callDropped*100);
+					blocked.set(numCalls, blocked.get(numCalls)+(double)callBlocked*100);
+					}
+					catch (java.lang.IndexOutOfBoundsException e){
+						dropped.add(numCalls, (double)callDropped*100);
+						blocked.add(numCalls, (double)callBlocked*100);
+					}
+					numCalls++;
+					
+				
 				if (channelsAvailable[currentEvent.getCallData().getStation()][0] > 0) {
 					channelsAvailable[currentEvent.getCallData().getStation()][0]--;
 					double position = 2 * rand.nextDouble();
 					double timeRemaining = ((2 - position) / currentEvent.getCallData().getVelocity()) * 3600;
-					
+
 					if (timeRemaining >= currentEvent.getCallData().getCallDuration()) {
 						CallData data = currentEvent.getCallData();
 						Event nextEvent = new Event(
@@ -127,12 +154,27 @@ public class Simulation {
 			}
 		}
 		System.out.println("Number of calls dropped: " + callDropped);
-		System.out.println("Number of calls blocked: " + callBlocked);
+		/*System.out.println("Number of calls blocked: " + callBlocked);
 		System.out.println("Number of calls completed: " + callCompleted);
-		System.out.println("Call Blocked Percentage: " + ((double)(callBlocked / 100.0)));
-		System.out.println("Call Dropped Percentage: " + ((double)(callDropped / 100.0)));
-		System.out.println("Call Completed Percentage: " + ((double)(callCompleted / 100.0)));
-		System.out.println("Successful Handover Percentage: "+((double)(callHandover / 100.0)));
+		System.out.println("Call Blocked Percentage: " + ((double) (callBlocked / 100.0)));
+		System.out.println("Call Dropped Percentage: " + ((double) (callDropped / 100.0)));
+		System.out.println("Call Completed Percentage: " + ((double) (callCompleted / 100.0)));
+		System.out.println("Successful Handover Percentage: " + ((double) (callHandover / 100.0)));
+		*/}
+		
+		for(int i = 0;i<9000;i++)
+		{
+			series1.add(i+1, dropped.get(i)/(1000*(i+1)));
+			series2.add(i+1, blocked.get(i)/(1000*(i+1)));
+		}
+		
+		dataset.addSeries(series1);
+	    dataset.addSeries(series2);
+	    System.out.println(series1.getItemCount());
+	    System.out.println(series2.getItemCount());
+	    GenerateGraphs xyPlot = new GenerateGraphs();
+	    xyPlot.generateLineChart(dataset, directory+"Warm-up.png", "Steady State - No Channel Reservation", "Total Number of Calls", "Percentage of Calls");
+		
 	}
 
 	/**

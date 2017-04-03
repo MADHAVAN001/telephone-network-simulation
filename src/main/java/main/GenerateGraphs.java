@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.jfree.chart.*;
 import org.jfree.data.statistics.*;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.chart.plot.PlotOrientation;
 
 /**
@@ -43,6 +44,18 @@ public class GenerateGraphs {
 			ChartUtilities.saveChartAsPNG(new File(fileName), chart, width, height);
 		} catch (IOException e) {
 			System.out.println("Error in creating Histogram");
+		}
+	}
+
+	public void generateLineChart(XYDataset dataset, String fileName, String plotTitle, String xaxis, String yaxis) {
+
+		JFreeChart chart = ChartFactory.createXYLineChart(plotTitle, xaxis, yaxis, dataset);
+		int width = 1000;
+		int height = 600;
+		try {
+			ChartUtilities.saveChartAsPNG(new File(fileName), chart, width, height);
+		} catch (IOException e) {
+			System.out.println("Error in creating XY Line Plot");
 		}
 	}
 }
