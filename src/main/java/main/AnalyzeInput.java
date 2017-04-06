@@ -70,7 +70,7 @@ public class AnalyzeInput {
 			prevArrival = data.getTime();
 		}
 		GenerateGraphs generator = new GenerateGraphs();
-		generator.generateHistogram(values, 80, directory + "InterArrivalTime.png", "Frequency vs. Inter-Arrival Time",
+		generator.generateHistogram(values, 100, directory + "InterArrivalTime.png", "Frequency vs. Inter-Arrival Time",
 				"Inter-Arrival Time", "Frequency");
 	}
 
