@@ -3,7 +3,6 @@ package main;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Random;
 
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.jfree.data.xy.XYSeries;
@@ -32,17 +31,17 @@ public class Simulation {
 		List<Double> dropped = new ArrayList<Double>();
 		List<Double> blocked = new ArrayList<Double>();
 		List<Double> numChannelsFree = new ArrayList<Double>();
-		
-		for (int iterations = 0; iterations < 100; iterations++) {
+
+		for (int iterations = 0; iterations < 1000; iterations++) {
 
 			UniformRealDistribution distributions[] = new UniformRealDistribution[21];
-			
-			for(int range = 0;range<21;range++)
-				distributions[range] = new UniformRealDistribution(0,2.0);
-			
+
+			for (int range = 0; range < 21; range++)
+				distributions[range] = new UniformRealDistribution(0, 2.0);
+
 			for (int i = 0; i < 21; i++) {
-				channelsAvailable[i][0] = 9;
-				channelsAvailable[i][1] = 1;
+				channelsAvailable[i][0] = 10;
+				channelsAvailable[i][1] = 0;
 			}
 			int callDropped = 0;
 			int callCompleted = 0;
@@ -56,31 +55,28 @@ public class Simulation {
 
 			int numCalls = 0;
 			while (futureEventList.size() > 0) {
-				for(int i = 0;i<21;i++)
-					numChannelsAvailable+=channelsAvailable[i][0];
+				for (int i = 0; i < 21; i++)
+					numChannelsAvailable += channelsAvailable[i][0];
 
 				Event currentEvent = futureEventList.poll();
-				//System.out.println("Call Id: " + currentEvent.getCallData().getId() + " CallDuration: "
-				//		+ currentEvent.getCallData().getCallDuration() + " CallStation: "
-				//		+ currentEvent.getCallData().getStation());
 				if (currentEvent.getType() == EventType.CALL_START_EVENT) {
 					try {
-						dropped.set(numCalls, dropped.get(numCalls) - (double) callDropped);
-						blocked.set(numCalls, blocked.get(numCalls) + (double) callBlocked);
-						numChannelsFree.set(numCalls, numChannelsFree.get(numCalls)+(double) numChannelsAvailable);
+						if (iterations > 1500) {
+							dropped.set(numCalls, dropped.get(numCalls) + (double) callDropped);
+							blocked.set(numCalls, blocked.get(numCalls) + (double) callBlocked);
+						}
+						numChannelsFree.set(numCalls, numChannelsFree.get(numCalls) + (double) numChannelsAvailable);
 					} catch (java.lang.IndexOutOfBoundsException e) {
 						dropped.add(numCalls, (double) callDropped);
 						blocked.add(numCalls, (double) callBlocked);
-						numChannelsFree.add(numCalls,(double)numChannelsAvailable);
+						numChannelsFree.add(numCalls, (double) numChannelsAvailable);
 					}
 					numCalls++;
 					if (channelsAvailable[currentEvent.getCallData().getStation()][0] > 0) {
 						channelsAvailable[currentEvent.getCallData().getStation()][0]--;
-												
+
 						double position = distributions[currentEvent.getCallData().getStation()].sample();
 						double timeRemaining = ((2 - position) / currentEvent.getCallData().getVelocity()) * 3600;
-						//System.out.println("TimeRemaining: " + timeRemaining + " CallDuration: "
-						//		+ currentEvent.getCallData().getCallDuration());
 						if (timeRemaining >= currentEvent.getCallData().getCallDuration()) {
 							CallData data = currentEvent.getCallData();
 							Event nextEvent = new Event(
@@ -101,9 +97,7 @@ public class Simulation {
 							futureEventList.add(nextEvent);
 						}
 					} else {
-
 						callBlocked++;
-
 						continue;
 					}
 				} else if (currentEvent.getType() == EventType.CALL_HANDOVER_EVENT) {
@@ -116,8 +110,6 @@ public class Simulation {
 						channelsAvailable[currentEvent.getCallData().getStation()][0]--;
 						CallData data = currentEvent.getCallData();
 						double timeRemaining = (2 / data.getVelocity()) * 3600;
-						//System.out.println("TimeRemaining: " + timeRemaining + " CallDuration: "
-						//		+ currentEvent.getCallData().getCallDuration());
 						if (timeRemaining >= data.getCallDuration()) {
 							Event nextEvent = new Event(currentEvent.getTime() + data.getCallDuration(),
 									EventType.CALL_TERMINATION_EVENT, data);
@@ -158,10 +150,6 @@ public class Simulation {
 						}
 					} else {
 						callDropped++;
-						//System.out.println("Call Blocked: " + numCalls);
-						//for (int j = 0; j < 20; j++)
-						//	System.out.print(channelsAvailable[j][0] + " ");
-						//System.out.println();
 						continue;
 					}
 				} else if (currentEvent.getType() == EventType.CALL_TERMINATION_EVENT) {
@@ -173,27 +161,22 @@ public class Simulation {
 				}
 			}
 			System.out.println("Number of calls dropped: " + callDropped);
-			/*
-			 * System.out.println("Number of calls blocked: " + callBlocked);
-			 * System.out.println("Number of calls completed: " +
-			 * callCompleted); System.out.println("Call Blocked Percentage: " +
-			 * ((double) (callBlocked / 100.0))); System.out.println(
-			 * "Call Dropped Percentage: " + ((double) (callDropped / 100.0)));
-			 * System.out.println("Call Completed Percentage: " + ((double)
-			 * (callCompleted / 100.0))); System.out.println(
-			 * "Successful Handover Percentage: " + ((double) (callHandover /
-			 * 100.0)));
-			 */}
-
-		for (int i = 0; i < 9000; i++) {
-			//series1.add(i + 1, (dropped.get(i)*numChannelsFree.get(i) / (1 * (i + 1)*200*1000)));
-			series1.add(i+1,numChannelsFree.get(i)/(1000*(i+1)*180));
-			series2.add(i + 1, (blocked.get(i)*numChannelsFree.get(i) / (1 * (i + 1)*200*1000)));
 		}
-		System.out.println("Count Blocked: " + blocked.size());
-		System.out.println("Count Blocked: " + dropped.size());
+
+		double callDroppedSummation = 0;
+		double callBlockedSummation = 0;
+		for (int i = 0; i < 9000; i++) {
+			if (i > 1500) {
+				callDroppedSummation += dropped.get(i);
+				callBlockedSummation += blocked.get(i);
+			}
+			series1.add(i + 1, numChannelsFree.get(i) / (1000 * (i + 1) * 180));
+			series2.add(i + 1, (blocked.get(i) * numChannelsFree.get(i) / (1 * (i + 1) * 200 * 1000)));
+		}
+		System.out.println("Call Blocked: " + ((double) callBlockedSummation / (8500 * 1000)));
+		System.out.println("Call Dropped: " + ((double) callDroppedSummation / (8500 * 1000)));
 		dataset.addSeries(series1);
-		//dataset.addSeries(series2);
+		// dataset.addSeries(series2);
 		System.out.println(series1.getItemCount());
 		System.out.println(series2.getItemCount());
 		GenerateGraphs xyPlot = new GenerateGraphs();

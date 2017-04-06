@@ -21,13 +21,17 @@ public class StochasticData {
 			double callTime =  previousCall + Math.abs(exponentialStochasticData(1.3698));
 			previousCall = callTime;
 			CallData data = new CallData(i + 1, callTime,
-					uniformStochasticData(1, 20), exponentialStochasticData(99.8359), normalStochasticData(1, 100));
+					uniformStochasticData(1, 20), exponentialStochasticData(99.8359), normalStochasticData(120.0721, 9.0191));
 			listCallData.add(data);
 		}
 		AnalyzeInput.generateVelocityHistogram(listCallData);
 		AnalyzeInput.generateCallDurationHistogram(listCallData);
 		AnalyzeInput.generateInterArrivalTimeHistogram(listCallData);
 		AnalyzeInput.generateBaseStationHistogram(listCallData);
+		AnalyzeInput.printVelocityMean(listCallData);
+		AnalyzeInput.printBaseStationMean(listCallData);
+		AnalyzeInput.printCallDurationMean(listCallData);
+		AnalyzeInput.printInterArrivalMean(listCallData);
 	}
 
 	/**
