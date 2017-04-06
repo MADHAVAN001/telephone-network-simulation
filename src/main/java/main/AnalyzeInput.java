@@ -25,7 +25,7 @@ public class AnalyzeInput {
 	 * 
 	 * @param callData
 	 */
-	private static void generateBaseStationHistogram(List<CallData> callData) {
+	public static void generateBaseStationHistogram(List<CallData> callData) {
 		if (callData == null || callData.size() == 0)
 			return;
 		double[] values = new double[callData.size()];

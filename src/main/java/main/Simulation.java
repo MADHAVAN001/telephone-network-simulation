@@ -26,7 +26,7 @@ public class Simulation {
 		 * Properties for plotting
 		 */
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		XYSeries series1 = new XYSeries("Call Dropped Percentage");
+		XYSeries series1 = new XYSeries("Average Channel Utilization Ratio");
 		XYSeries series2 = new XYSeries("Call Blocked Percentage");
 
 		List<Double> dropped = new ArrayList<Double>();
@@ -41,8 +41,8 @@ public class Simulation {
 				distributions[range] = new UniformRealDistribution(0,2.0);
 			
 			for (int i = 0; i < 21; i++) {
-				channelsAvailable[i][0] = 10;
-				channelsAvailable[i][1] = 0;
+				channelsAvailable[i][0] = 9;
+				channelsAvailable[i][1] = 1;
 			}
 			int callDropped = 0;
 			int callCompleted = 0;
@@ -187,7 +187,7 @@ public class Simulation {
 
 		for (int i = 0; i < 9000; i++) {
 			//series1.add(i + 1, (dropped.get(i)*numChannelsFree.get(i) / (1 * (i + 1)*200*1000)));
-			series1.add(i+1,numChannelsFree.get(i)/(1000*(i+1)*200));
+			series1.add(i+1,numChannelsFree.get(i)/(1000*(i+1)*180));
 			series2.add(i + 1, (blocked.get(i)*numChannelsFree.get(i) / (1 * (i + 1)*200*1000)));
 		}
 		System.out.println("Count Blocked: " + blocked.size());
@@ -197,7 +197,7 @@ public class Simulation {
 		System.out.println(series1.getItemCount());
 		System.out.println(series2.getItemCount());
 		GenerateGraphs xyPlot = new GenerateGraphs();
-		xyPlot.generateLineChart(dataset, directory + "Warm-up.png", "Steady State - No Channel Reservation",
+		xyPlot.generateLineChart(dataset, directory + "Warm-up.png", "Steady State - One Channel Reservation",
 				"Total Number of Calls", "Percentage of Channels Utilised");
 
 	}
