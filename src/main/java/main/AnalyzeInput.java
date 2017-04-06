@@ -19,13 +19,17 @@ public class AnalyzeInput {
 		generateCallDurationHistogram(listCallData);
 		generateInterArrivalTimeHistogram(listCallData);
 		generateVelocityHistogram(listCallData);
+		printVelocityMean(listCallData);
+		printBaseStationMean(listCallData);
+		printCallDurationMean(listCallData);
+		printInterArrivalMean(listCallData);
 	}
 
 	/**
 	 * 
 	 * @param callData
 	 */
-	private static void generateBaseStationHistogram(List<CallData> callData) {
+	public static void generateBaseStationHistogram(List<CallData> callData) {
 		if (callData == null || callData.size() == 0)
 			return;
 		double[] values = new double[callData.size()];
@@ -90,4 +94,63 @@ public class AnalyzeInput {
 		generator.generateHistogram(values, 40, directory + "Velocity.png", "Frequency vs. Velocity", "Velocity",
 				"Frequency");
 	}
+
+	/**
+	 * 
+	 * @param callData
+	 */
+	public static void printVelocityMean(List<CallData> callData) {
+		if (callData == null || callData.size() == 0)
+			return;
+		double sumVelocity = 0;
+		for (CallData data : callData) {
+			sumVelocity += data.getVelocity();
+		}
+		System.out.println("Velocity Mean: " + ((double) sumVelocity / callData.size()));
+	}
+
+	/**
+	 * 
+	 * @param callData
+	 */
+	public static void printInterArrivalMean(List<CallData> callData) {
+		if (callData == null || callData.size() == 0)
+			return;
+		double sumArrival = 0;
+		double prevArrival = 0;
+		for (CallData data : callData) {
+			sumArrival += data.getTime() - prevArrival;
+			prevArrival = data.getTime();
+		}
+		System.out.println("Inter-Arrival Mean: " + ((double) sumArrival / callData.size()));
+	}
+
+	/**
+	 * 
+	 * @param callData
+	 */
+	public static void printCallDurationMean(List<CallData> callData) {
+		if (callData == null || callData.size() == 0)
+			return;
+		double callDuration = 0;
+		for (CallData data : callData) {
+			callDuration += data.getCallDuration();
+		}
+		System.out.println("Call Duration Mean: " + ((double) callDuration / callData.size()));
+	}
+
+	/**
+	 * 
+	 * @param callData
+	 */
+	public static void printBaseStationMean(List<CallData> callData) {
+		if (callData == null || callData.size() == 0)
+			return;
+		double baseStation = 0;
+		for (CallData data : callData) {
+			baseStation += data.getStation();
+		}
+		System.out.println("Base Station Mean: " + ((double) baseStation / callData.size()));
+	}
+
 }
